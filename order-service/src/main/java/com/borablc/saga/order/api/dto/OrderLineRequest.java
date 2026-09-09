@@ -1,4 +1,4 @@
-package com.borablc.saga.order.api;
+package com.borablc.saga.order.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;

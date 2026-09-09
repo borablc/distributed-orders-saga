@@ -1,6 +1,6 @@
 package com.borablc.saga.order.service;
 
-import com.borablc.saga.order.api.CreateOrderRequest;
+import com.borablc.saga.order.api.dto.CreateOrderRequest;
 import com.borablc.saga.order.domain.Order;
 import com.borablc.saga.order.domain.OrderLine;
 import com.borablc.saga.order.domain.OrderRepository;

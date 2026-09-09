@@ -1,4 +1,4 @@
-package com.borablc.saga.order.api;
+package com.borablc.saga.order.api.dto;
 
 import com.borablc.saga.order.domain.Order;
 import com.borablc.saga.order.domain.OrderStatus;
