@@ -1,6 +1,6 @@
 package com.borablc.saga.common.command;
 
-import com.borablc.saga.common.OrderLine;
+import com.borablc.saga.common.OrderItem;
 import com.borablc.saga.common.SagaCommand;
 
 import java.time.Instant;
@@ -11,7 +11,7 @@ public record ReserveStock(
         UUID messageId,
         UUID orderId,
         UUID reservationId,
-        List<OrderLine> lines,
+        List<OrderItem> lines,
         Instant occurredAt
 ) implements SagaCommand {
 }

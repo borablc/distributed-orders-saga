@@ -1,6 +1,6 @@
 package com.borablc.saga.common.event;
 
-import com.borablc.saga.common.OrderLine;
+import com.borablc.saga.common.OrderItem;
 import com.borablc.saga.common.SagaEvent;
 
 import java.math.BigDecimal;
@@ -12,7 +12,7 @@ public record OrderCreated(
         UUID messageId,
         UUID orderId,
         String customerId,
-        List<OrderLine> lines,
+        List<OrderItem> lines,
         BigDecimal totalAmount,
         Instant occurredAt) implements SagaEvent {
 }
