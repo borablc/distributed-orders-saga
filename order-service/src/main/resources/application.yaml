@@ -31,6 +31,12 @@ spring:
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
 
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
