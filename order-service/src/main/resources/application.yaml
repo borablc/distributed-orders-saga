@@ -7,8 +7,8 @@ spring:
   web:
     resources:
       add-mappings: false
-    mvc:
-      throw-exception-if-no-handler-found: true
+  mvc:
+    throw-exception-if-no-handler-found: true
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/orders
@@ -37,11 +37,6 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USER:saga}
     password: ${RABBITMQ_PASSWORD:saga}
-
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
 
 management:
   endpoints:
