@@ -1,5 +1,6 @@
 package com.borablc.saga.order.outbox;
 
+import com.borablc.saga.common.Headers;
 import com.borablc.saga.common.Topics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -44,7 +45,7 @@ public class OutboxPublisher {
                     entry.getAggregateId().toString(),
                     entry.getPayload()
             );
-            producerRecord.headers().add("message-type", entry.getType().getBytes(StandardCharsets.UTF_8));
+            producerRecord.headers().add(Headers.MESSAGE_TYPE, entry.getType().getBytes(StandardCharsets.UTF_8));
             CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(producerRecord);
             futures.put(entry, future);
         });
