@@ -11,7 +11,7 @@ public record ChargePayment(
         UUID orderId,
         UUID chargeId,
         String customerId,
-        BigDecimal Amount,
+        BigDecimal amount,
         Instant occurredAt
 ) implements SagaCommand {
 }
