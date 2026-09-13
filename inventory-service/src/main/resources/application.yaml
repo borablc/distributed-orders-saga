@@ -55,3 +55,6 @@ management:
 logging:
   level:
     com.borablc.saga: DEBUG
+
+app:
+  decline-above: 500.00
