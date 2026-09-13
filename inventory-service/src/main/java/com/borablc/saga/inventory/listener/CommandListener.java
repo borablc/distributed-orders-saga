@@ -22,10 +22,10 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class CommandListener {
 
+    private static final int MAX_RETRIES = 3;
     private final InventoryService inventoryService;
     private final ObjectMapper objectMapper;
     private final RabbitTemplate rabbitTemplate;
-    private static final int MAX_RETRIES = 3;
 
     public CommandListener(InventoryService inventoryService,
                            ObjectMapper objectMapper,
@@ -56,9 +56,9 @@ public class CommandListener {
         try {
             switch (messageType) {
                 case MessageTypes.RESERVE_STOCK ->
-                    inventoryService.reserveStock(objectMapper.readValue(payload, ReserveStock.class));
+                        inventoryService.reserveStock(objectMapper.readValue(payload, ReserveStock.class));
                 case MessageTypes.RELEASE_STOCK ->
-                    inventoryService.releaseStock(objectMapper.readValue(payload, ReleaseStock.class));
+                        inventoryService.releaseStock(objectMapper.readValue(payload, ReleaseStock.class));
                 case null -> {
                     log.warn("Message type is null");
                     sendToDLXAndAck(message, channel, deliveryTag);
@@ -73,7 +73,7 @@ public class CommandListener {
             //Step 4
             channel.basicAck(deliveryTag, false);
 
-        //Step 5
+            //Step 5
         } catch (JacksonException e) {
             log.error("Malformed payload, parking message", e);
             sendToDLXAndAck(message, channel, deliveryTag);
@@ -82,7 +82,7 @@ public class CommandListener {
         }
     }
 
-    private void sendToDLXAndAck(Message message, Channel channel, long deliveryTag){
+    private void sendToDLXAndAck(Message message, Channel channel, long deliveryTag) {
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
         rabbitTemplate.send(Queues.DLX, routingKey, message);
         try {
@@ -102,19 +102,20 @@ public class CommandListener {
         if (retryCount >= MAX_RETRIES) {
             log.error("Message failed after {} retries, parking message", retryCount, e);
             sendToDLXAndAck(message, channel, deliveryTag);
-        } else {
-            log.warn("Retry {} of {}", retryCount + 1, MAX_RETRIES, e);
-            message.getMessageProperties().setHeader(Headers.RETRY_COUNT, retryCount + 1);
-            String routingKey = message.getMessageProperties().getReceivedRoutingKey();
-            rabbitTemplate.send(Queues.RETRY_EXCHANGE, routingKey, message);
-            try {
-                channel.basicAck(deliveryTag, false);
-            } catch (IOException ackError) {
-                // Acknowledgement failed after sending to Retry Exchange.
-                // This means the message will be sent to Inventory Queue again by us and also be delivered by RabbitMQ.
-                // However, the dedup mechanism will protect us from the replica created by RabbitMQ.
-                log.error("Failed to acknowledge message", ackError);
-            }
+            return;
+        }
+        log.warn("Retry {} of {}", retryCount + 1, MAX_RETRIES, e);
+        message.getMessageProperties().setHeader(Headers.RETRY_COUNT, retryCount + 1);
+        String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+        rabbitTemplate.send(Queues.RETRY_EXCHANGE, routingKey, message);
+        try {
+            channel.basicAck(deliveryTag, false);
+        } catch (IOException ackError) {
+            // Acknowledgement failed after sending to Retry Exchange.
+            // This means the message will be sent to Inventory Queue again by us and also be delivered by RabbitMQ.
+            // However, the dedup mechanism will protect us from the replica created by RabbitMQ.
+            log.error("Failed to acknowledge message", ackError);
+
         }
     }
 }
