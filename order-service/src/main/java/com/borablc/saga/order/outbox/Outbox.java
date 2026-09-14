@@ -2,6 +2,8 @@ package com.borablc.saga.order.outbox;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -38,4 +40,11 @@ public class Outbox {
 
     @Column(name = "attempts", nullable = false)
     private int attempts;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "destination", nullable = false)
+    private OutboxDestination destination;
+
+    @Column(name = "routing_key")
+    private String routingKey;
 }

@@ -8,11 +8,9 @@ import com.borablc.saga.order.domain.Order;
 import com.borablc.saga.order.domain.OrderLine;
 import com.borablc.saga.order.domain.OrderRepository;
 import com.borablc.saga.order.domain.OrderStatus;
-import com.borablc.saga.order.outbox.Outbox;
-import com.borablc.saga.order.outbox.OutboxRepository;
+import com.borablc.saga.order.outbox.OutboxWriter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -24,15 +22,12 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
+    private final OutboxWriter outboxWriter;
     private static final BigDecimal UNIT_PRICE = new BigDecimal("100.00");
     public OrderService(OrderRepository orderRepository,
-                        OutboxRepository outboxRepository,
-                        ObjectMapper objectMapper) {
+                        OutboxWriter outboxWriter) {
         this.orderRepository = orderRepository;
-        this.outboxRepository = outboxRepository;
-        this.objectMapper = objectMapper;
+        this.outboxWriter = outboxWriter;
     }
 
     @Transactional
@@ -70,16 +65,7 @@ public class OrderService {
                 now
         );
 
-        String payload = objectMapper.writeValueAsString(event);
-
-        Outbox outboxEntry = new Outbox();
-        outboxEntry.setId(messageId);
-        outboxEntry.setAggregateId(order.getId());
-        outboxEntry.setPayload(payload);
-        outboxEntry.setType(MessageTypes.ORDER_CREATED);
-        outboxEntry.setCreatedAt(now);
-
-        outboxRepository.save(outboxEntry);
+        outboxWriter.writeEvent(messageId, order.getId(), MessageTypes.ORDER_CREATED, event);
         return orderRepository.save(order);
     }
 
