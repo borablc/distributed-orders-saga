@@ -16,4 +16,13 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic sagaRepliesTopic(){
+        return TopicBuilder
+                .name(Topics.SAGA_REPLIES)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }
