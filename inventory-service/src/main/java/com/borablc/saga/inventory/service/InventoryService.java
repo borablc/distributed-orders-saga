@@ -3,8 +3,10 @@ package com.borablc.saga.inventory.service;
 
 import com.borablc.saga.common.MessageTypes;
 import com.borablc.saga.common.OrderItem;
+import com.borablc.saga.common.command.ConfirmStock;
 import com.borablc.saga.common.command.ReleaseStock;
 import com.borablc.saga.common.command.ReserveStock;
+import com.borablc.saga.common.event.StockConfirmed;
 import com.borablc.saga.common.event.StockReleased;
 import com.borablc.saga.common.event.StockReservationFailed;
 import com.borablc.saga.common.event.StockReserved;
@@ -179,5 +181,67 @@ public class InventoryService {
                 now
         );
         outboxWriter.write(replyMessageId, command.orderId(), MessageTypes.STOCK_RELEASED, stockReleased);
+    }
+
+    @Transactional
+    public void confirmStock(ConfirmStock command){
+        //Possible scenarios:
+        //1. Command is already processed -> ignore (duplicate confirmation)
+        //2. Reservation not found -> throw error, nothing to confirm, should handle manually
+        //3. Reservation found but already CONFIRMED -> ignore (duplicate confirmation)
+        //4. Reservation found but RELEASED -> throw error, nothing to confirm, should handle manually
+        //5. Reservation found and ACTIVE -> update stock, update reservation status and write event to outbox
+
+        //Scenario 1
+        Instant now = Instant.now();
+        if (processedMessageRepository.markProcessed(command.messageId(), now) == 0) {
+            return;
+        }
+
+        //Scenario 2
+        Reservation reservation = reservationRepository.findById(command.reservationId()).orElse(null);
+        if (reservation == null) {
+            log.error("Reservation tried to be confirmed but not found. Reservation id: {}", command.reservationId());
+            throw new IllegalStateException("Reservation not found");
+        }
+
+        //Scenario 3
+        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            return;
+        }
+
+        //Scenario 4
+        if (reservation.getStatus() == ReservationStatus.RELEASED) {
+            log.error("Reservation tried to be confirmed but is already released. Reservation id: {}", command.reservationId());
+            throw new IllegalStateException("Reservation is already released");
+        }
+
+        //Scenario 5 (Update stock)
+        for(ReservationLine reservationLine : reservation.getReservationLines()){
+            StockItem stockItem = stockItemRepository.findById(reservationLine.getSku()).orElse(null);
+            if (stockItem == null) {
+                // SKU might have been removed between reservation and confirm, worth logging.
+                log.warn("Stock item not found for sku: {}", reservationLine.getSku());
+                continue;
+            }
+            stockItem.setReserved(stockItem.getReserved() - reservationLine.getQuantity());
+        }
+
+        //Scenario 5 (Update reservation status)
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        reservation.setConfirmedAt(now);
+
+        //Scenario 5 (Write event to outbox)
+        UUID replyMessageId = UUID.randomUUID();
+        StockConfirmed stockConfirmed = new StockConfirmed(
+                replyMessageId,
+                command.orderId(),
+                command.reservationId(),
+                now);
+        outboxWriter.write(
+                replyMessageId,
+                command.orderId(),
+                MessageTypes.STOCK_CONFIRMED,
+                stockConfirmed);
     }
 }

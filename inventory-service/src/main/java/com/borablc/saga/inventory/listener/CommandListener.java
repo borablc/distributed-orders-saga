@@ -3,6 +3,7 @@ package com.borablc.saga.inventory.listener;
 import com.borablc.saga.common.Headers;
 import com.borablc.saga.common.MessageTypes;
 import com.borablc.saga.common.Queues;
+import com.borablc.saga.common.command.ConfirmStock;
 import com.borablc.saga.common.command.ReleaseStock;
 import com.borablc.saga.common.command.ReserveStock;
 import com.borablc.saga.inventory.service.InventoryService;
@@ -59,6 +60,8 @@ public class CommandListener {
                         inventoryService.reserveStock(objectMapper.readValue(payload, ReserveStock.class));
                 case MessageTypes.RELEASE_STOCK ->
                         inventoryService.releaseStock(objectMapper.readValue(payload, ReleaseStock.class));
+                case MessageTypes.CONFIRM_STOCK ->
+                        inventoryService.confirmStock(objectMapper.readValue(payload, ConfirmStock.class));
                 case null -> {
                     log.warn("Message type is null");
                     sendToDLXAndAck(message, channel, deliveryTag);

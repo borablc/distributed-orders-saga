@@ -8,6 +8,7 @@ import com.borablc.saga.common.SagaEvent;
 import com.borablc.saga.common.SagaFailureEvent;
 import com.borablc.saga.common.Topics;
 import com.borablc.saga.common.command.ChargePayment;
+import com.borablc.saga.common.command.ConfirmStock;
 import com.borablc.saga.common.command.ReleaseStock;
 import com.borablc.saga.common.command.ReserveStock;
 import com.borablc.saga.common.event.OrderCancelled;
@@ -16,6 +17,7 @@ import com.borablc.saga.common.event.OrderCreated;
 import com.borablc.saga.common.event.PaymentCharged;
 import com.borablc.saga.common.event.PaymentFailed;
 import com.borablc.saga.common.event.PaymentRefunded;
+import com.borablc.saga.common.event.StockConfirmed;
 import com.borablc.saga.common.event.StockReleased;
 import com.borablc.saga.common.event.StockReservationFailed;
 import com.borablc.saga.common.event.StockReserved;
@@ -48,7 +50,8 @@ public class SagaOrchestrator {
     private static final Map<Transition, SagaStep> TRANSITIONS = Map.ofEntries(
             // HAPPY PATH
             Map.entry(new Transition(SagaStep.AWAITING_STOCK, MessageTypes.STOCK_RESERVED), SagaStep.AWAITING_PAYMENT),
-            Map.entry(new Transition(SagaStep.AWAITING_PAYMENT, MessageTypes.PAYMENT_CHARGED), SagaStep.COMPLETED),
+            Map.entry(new Transition(SagaStep.AWAITING_PAYMENT, MessageTypes.PAYMENT_CHARGED), SagaStep.CONFIRMING_STOCK),
+            Map.entry(new Transition(SagaStep.CONFIRMING_STOCK, MessageTypes.STOCK_CONFIRMED), SagaStep.COMPLETED),
             // STOCK RESERVATION FAILED -- UNHAPPY PATH
             Map.entry(new Transition(SagaStep.AWAITING_STOCK, MessageTypes.STOCK_RESERVATION_FAILED), SagaStep.CANCELLED),
             // PAYMENT FAILED -- UNHAPPY PATH
@@ -149,6 +152,9 @@ public class SagaOrchestrator {
             }
             case MessageTypes.PAYMENT_REFUNDED -> {
                 return objectMapper.readValue(payload, PaymentRefunded.class);
+            }
+            case MessageTypes.STOCK_CONFIRMED -> {
+                return objectMapper.readValue(payload, StockConfirmed.class);
             }
             default -> {
                 log.warn("Unknown message type: {}", messageType);
@@ -260,6 +266,21 @@ public class SagaOrchestrator {
                         order.getId(),
                         MessageTypes.RESERVE_STOCK,
                         Queues.RK_RESERVE_STOCK,
+                        entry);
+            }
+            case CONFIRMING_STOCK -> {
+                ConfirmStock entry = new ConfirmStock(
+                        messageId,
+                        order.getId(),
+                        saga.getReservationId(),
+                        now
+                );
+
+                outboxWriter.writeCommand(
+                        messageId,
+                        order.getId(),
+                        MessageTypes.CONFIRM_STOCK,
+                        Queues.RK_CONFIRM_STOCK,
                         entry);
             }
             default -> { }

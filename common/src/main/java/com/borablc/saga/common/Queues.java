@@ -11,6 +11,7 @@ public final class Queues {
     // Routing keys
     public static final String RK_RESERVE_STOCK  = "inventory.reserve";
     public static final String RK_RELEASE_STOCK  = "inventory.release";
+    public static final String RK_CONFIRM_STOCK  = "inventory.confirm";
     public static final String RK_CHARGE_PAYMENT = "payment.charge";
     public static final String RK_REFUND_PAYMENT = "payment.refund";
 

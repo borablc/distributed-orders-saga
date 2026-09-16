@@ -11,6 +11,7 @@ public final class MessageTypes {
     public static final String STOCK_RESERVED            = "stock.reserved.v1";
     public static final String STOCK_RESERVATION_FAILED  = "stock.reservation-failed.v1";
     public static final String STOCK_RELEASED            = "stock.released.v1";
+    public static final String STOCK_CONFIRMED           = "stock.confirmed.v1";
 
     public static final String PAYMENT_CHARGED           = "payment.charged.v1";
     public static final String PAYMENT_FAILED            = "payment.failed.v1";
@@ -20,4 +21,5 @@ public final class MessageTypes {
     public static final String RELEASE_STOCK             = "release-stock.v1";
     public static final String CHARGE_PAYMENT            = "charge-payment.v1";
     public static final String REFUND_PAYMENT            = "refund-payment.v1";
+    public static final String CONFIRM_STOCK             = "confirm-stock.v1";
 }

@@ -39,6 +39,9 @@ public class Reservation {
     @Column(name = "released_at")
     private Instant releasedAt;
 
+    @Column(name = "confirmed_at")
+    private Instant confirmedAt;
+
     @OneToMany(mappedBy = "reservation", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<ReservationLine> reservationLines = new ArrayList<>();
 
