@@ -45,6 +45,6 @@ public class Outbox {
     @Column(name = "destination", nullable = false)
     private OutboxDestination destination;
 
-    @Column(name = "routing_key")
-    private String routingKey;
+    @Column(name = "destination_key", nullable = false)
+    private String destinationKey;
 }

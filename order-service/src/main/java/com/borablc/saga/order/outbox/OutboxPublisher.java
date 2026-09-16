@@ -2,7 +2,6 @@ package com.borablc.saga.order.outbox;
 
 import com.borablc.saga.common.Headers;
 import com.borablc.saga.common.Queues;
-import com.borablc.saga.common.Topics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.amqp.core.Message;
@@ -64,7 +63,7 @@ public class OutboxPublisher {
             props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             Message msg = new Message(entry.getPayload().getBytes(StandardCharsets.UTF_8), props);
             try {
-                rabbitTemplate.send(Queues.COMMAND_EXCHANGE, entry.getRoutingKey(), msg);
+                rabbitTemplate.send(Queues.COMMAND_EXCHANGE, entry.getDestinationKey(), msg);
                 entry.setPublishedAt(Instant.now());
             } catch (Exception e) {
                 entry.setAttempts(entry.getAttempts() + 1);
@@ -82,7 +81,7 @@ public class OutboxPublisher {
         Map<Outbox, CompletableFuture<SendResult<String, String>>> futures = new LinkedHashMap<>();
         outboxes.forEach(entry -> {
             ProducerRecord<String, String> producerRecord = new ProducerRecord<>(
-                    Topics.ORDER_EVENTS,
+                    entry.getDestinationKey(),
                     null,
                     entry.getAggregateId().toString(),
                     entry.getPayload()

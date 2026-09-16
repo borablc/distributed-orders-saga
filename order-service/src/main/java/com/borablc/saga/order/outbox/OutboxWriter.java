@@ -26,18 +26,18 @@ public class OutboxWriter {
                 payload
         );
     }
-    public void writeEvent(UUID messageId, UUID aggregateId, String type, Object payload){
+    public void writeEvent(UUID messageId, UUID aggregateId, String type, String topic, Object payload){
         write(
                 messageId,
                 aggregateId,
                 type,
                 OutboxDestination.KAFKA,
-                null,
+                topic,
                 payload
         );
     }
 
-    private void write(UUID messageId, UUID aggregateId, String type, OutboxDestination destination, String routingKey, Object payload){
+    private void write(UUID messageId, UUID aggregateId, String type, OutboxDestination destination, String destinationKey, Object payload){
         Outbox entry = new Outbox();
         entry.setId(messageId);
         entry.setAggregateId(aggregateId);
@@ -45,7 +45,7 @@ public class OutboxWriter {
         entry.setPayload(objectMapper.writeValueAsString(payload));
         entry.setCreatedAt(Instant.now());
         entry.setDestination(destination);
-        entry.setRoutingKey(routingKey);
+        entry.setDestinationKey(destinationKey);
         outboxRepository.save(entry);
     }
 }

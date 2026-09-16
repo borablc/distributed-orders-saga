@@ -2,6 +2,7 @@ package com.borablc.saga.order.service;
 
 import com.borablc.saga.common.MessageTypes;
 import com.borablc.saga.common.OrderItem;
+import com.borablc.saga.common.Topics;
 import com.borablc.saga.common.event.OrderCreated;
 import com.borablc.saga.order.api.dto.CreateOrderRequest;
 import com.borablc.saga.order.domain.Order;
@@ -65,7 +66,7 @@ public class OrderService {
                 now
         );
 
-        outboxWriter.writeEvent(messageId, order.getId(), MessageTypes.ORDER_CREATED, event);
+        outboxWriter.writeEvent(messageId, order.getId(), MessageTypes.ORDER_CREATED, Topics.ORDER_EVENTS,event);
         return orderRepository.save(order);
     }
 
