@@ -25,4 +25,22 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic orderEventsDltTopic(){
+        return TopicBuilder
+                .name(Topics.ORDER_EVENTS_DLT)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic sagaRepliesDltTopic(){
+        return TopicBuilder
+                .name(Topics.SAGA_REPLIES_DLT)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }
