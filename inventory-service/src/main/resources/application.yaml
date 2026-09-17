@@ -58,3 +58,7 @@ logging:
 
 app:
   decline-above: 500.00
+  outbox:
+    retention-days: 7
+  inbox:
+    retention-days: 30

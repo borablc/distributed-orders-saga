@@ -55,3 +55,9 @@ management:
 logging:
   level:
     com.borablc.saga: DEBUG
+
+app:
+  outbox:
+    retention-days: 7
+  inbox:
+    retention-days: 30

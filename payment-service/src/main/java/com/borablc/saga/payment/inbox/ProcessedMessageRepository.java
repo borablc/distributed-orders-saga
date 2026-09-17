@@ -16,4 +16,8 @@ public interface ProcessedMessageRepository extends JpaRepository<ProcessedMessa
         ON CONFLICT (message_id) DO NOTHING
         """, nativeQuery = true)
     int markProcessed(@Param("messageId") UUID messageId, @Param("processedAt") Instant processedAt);
+
+    @Modifying
+    @Query("DELETE FROM ProcessedMessage pm WHERE pm.processedAt < :before")
+    int deleteProcessedBefore(@Param("before") Instant before);
 }
